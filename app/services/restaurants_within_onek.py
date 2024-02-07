@@ -18,11 +18,16 @@ def to_float(value):
         return None
 
 def convert_coords_to_address(latitude, longitude):
-    url = f'https://dapi.kakao.com/v2/local/geo/coord2address.json?x={longitude}&y={latitude}'
+    url = f'https://dapi.kakao.com/v2/local/geo/coord2address.json'
     db_host = os.getenv("KAKAO_API_KEY")
-    print('kakao api host: ', db_host)
+
+    params = {
+        'x': latitude,
+        'y': longitude,
+    }
+
     headers = {'Authorization': f'KakaoAK {db_host}'}
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, params=params, headers=headers)
     try:
         address = response.json()['documents'][0]['address']['address_name']
         print('address from kakao: ', address)
