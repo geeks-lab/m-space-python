@@ -4,6 +4,7 @@
 app/assets/*
 config/
 env/
+.env
 .DS_Store
 .idea/
 app/.DS_Store
@@ -312,9 +313,9 @@ temp/Untitled.ipynb
 
 app/assets/fasttextmodel/cc.ko.300.bin
 
-app/assets/one_hot_encoded.csv
+temp/one_hot_encoded.csv
 
-app/assets/restaurant_data.csv
+temp/restaurant_data.csv
 
 app/assets/mymodelfromreviews/word2vec-from-reviews.model
 >>>>>>> Stashed changes

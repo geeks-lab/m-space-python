@@ -1,7 +1,7 @@
 import gensim
 import pandas as pd
 
-df = pd.read_csv("../app/assets/restaurant_data2.csv")
+df = pd.read_csv("restaurant_data2.csv")
 
 review_text = df.reviews.apply(gensim.utils.simple_preprocess)
 
