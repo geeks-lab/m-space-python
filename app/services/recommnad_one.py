@@ -89,51 +89,45 @@ def restaurants_for_one(recommand_for_one):
     given_category_list = recommand_for_one.categories
     given_moods = recommand_for_one.moodKeywords
 
-    # nearby_restaurants 안의 각 식당에 대해 MongoDB에서 'restaurant' 컬렉션에서 조회 후 카테고리가 일치하는 것을 걸러내기
     cate_filtered_nearby_rests = []
-    client = MongoClient('mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
+
+    # MongoDB 연결
+    client = MongoClient(
+        'mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
     db = client['sniper']
     collection = db['restaurant']
-    # user가 입력한 장소 1km 반경 내 리스트에서 추천
-    df = pd.read_csv(
-        f'/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/restaurants_within_onek_{user_id}.csv')
-    nearby_restaurants = []
-    for index, row in df.iterrows():
-        restaurant_dict = row.to_dict()
 
-        nearby_restaurants.append(restaurant_dict)
+    # MongoDB에서 식당 데이터 가져오기
+    nearby_restaurants = collection.find()
+
+    # 사용자가 입력한 카테고리와 일치하는 식당 필터링
     for restaurant in nearby_restaurants:
-        # MongoDB에서 조회하는 부분을 가정하고, 실제 사용하는 DB에 맞게 수정 필요
-        queried_data = collection.find_one({'_id': ObjectId(restaurant['_id'])})
         for category in given_category_list:
-            if queried_data.get('food_category') == category or queried_data.get('foodCategories') == category:
+            if restaurant.get('food_category') == category or restaurant.get('foodCategories') == category:
                 cate_filtered_nearby_rests.append(restaurant)
+
     print(f'1km 이내의 카테고리에 속하는 식당 수: {len(cate_filtered_nearby_rests)}')
 
-    '''
-    3. 유저 분위기태그 벡터라이징
-    '''
+    # 유저 분위기 태그 벡터화
     vectorizing_user_moodKeywords(given_moods)
 
-    '''
-    4. 유저 분위기태그 벡터와 유사한 벡터3개 꾸리기
-        비교 : user_vector VS rest['vector'] (in cate_filtered_nearby_rests) 
-    '''
-    user_vector_str = user_vectors[0] # TODO: 위에서 user_vectors 로 안하고 그냥 user_vector로 Refactor later
-
-    # 문자열을 리스트로 변환
+    user_vector_str = user_vectors[0]  # TODO: user_vectors 변수명 수정
     user_vector_list = eval(user_vector_str)
     user_vector = [float(num) for num in user_vector_list]
 
+    # 유사한 식당 찾기
     for rest in cate_filtered_nearby_rests:
         rest_vector = eval(rest['vector'])
         rest['res_distance'] = calculate_euclidean_distance(user_vector, rest_vector)
 
+    # 가장 유사한 식당들 선택
     four_res_list = sorted(cate_filtered_nearby_rests, key=lambda x: x['res_distance'])[:4]
     four_id_list = []
 
     for res in four_res_list:
-        print("recommmnaded restaurants' name: ", res['name'])
+        print("Recommended restaurant name: ", res['name'])
         four_id_list.append(res['_id'])
+
     return four_id_list
+
 
