@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 import json
 
+
 load_dotenv()
 
 def to_float(value):
@@ -61,15 +62,15 @@ def api_restaurants_within_onek(restaurants_within_onek):
                 distance = haversine(base_coords, (coords[0], coords[1]), unit=Unit.KILOMETERS)
                 if distance <= 1:
                     nearby_restaurants.append(result_dict)
-    # CSV 파일로 저장
-    if nearby_restaurants:
-        nearby_df = pd.DataFrame(nearby_restaurants)
-        nearby_df.to_csv(f'/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/restaurants_within_onek_{user_id}.csv')
-        print(f'csv for {user_id} has been downloaded!')
+    # # CSV 파일로 저장
+    # if nearby_restaurants:
+    #     nearby_df = pd.DataFrame(nearby_restaurants)
+    #     nearby_df.to_csv(f'/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/restaurants_within_onek_{user_id}.csv')
+    #     print(f'csv for {user_id} has been downloaded!')
 
     print(f' 1km 이내의 식당 수: {len(nearby_restaurants)}')
     rest_id_list = []
     for rest in nearby_restaurants:
         rest_id_list.append(rest["_id"])
-    return rest_id_list
+    return rest_id_list, nearby_restaurants
 

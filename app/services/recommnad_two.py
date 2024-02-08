@@ -3,7 +3,8 @@ import pandas as pd
 import ast
 
 # CSV 파일 읽기
-df = pd.read_csv('/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/updated_swapped_coordinates.csv')
+df = pd.read_csv(
+        f'/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/restaurants_within_onek_{user_id}.csv')
 
 # 'vector' 컬럼을 NumPy 배열로 변환하여 벡터 데이터 집합 만들기
 vector_dataset = [np.array(ast.literal_eval(vector_str)) if pd.notna(vector_str) else None for vector_str in
@@ -39,19 +40,14 @@ def restaurants_for_two(rest_id_list):
     rest_a_vec = restid_to_restvec(rest_id_list[0])
     rest_b_vec = restid_to_restvec(rest_id_list[1])
 
-
-
     mid_res_list = []
+
 
     # 일치하는 '_id' 찾아서 리스트에 저장
     matching_ids = find_matching_ids(mid_res_list)
-
-
-
     # 결과 출력
     print("Matching '_id' 리스트:")
     print('matching_ids: ', matching_ids)
-
     return matching_ids
 
 

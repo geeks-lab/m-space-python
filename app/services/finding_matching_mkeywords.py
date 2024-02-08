@@ -56,7 +56,7 @@ def extract_adjectives(text):
 
 # 현재 파일의 디렉토리를 기준으로 모델 파일의 절대 경로 생성
 #model_path = os.path.join(os.path.dirname(__file__), '../../assets/modelfromreviews2.model')
-model_path = '/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/modelfromreviews2.model'
+model_path = '/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/mymodelfromreviews/updated_model.model'
 model = Word2Vec.load(model_path)
 
 model = Word2Vec.load(model_path)

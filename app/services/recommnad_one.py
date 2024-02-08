@@ -100,6 +100,7 @@ def restaurants_for_one(recommand_for_one):
     nearby_restaurants = []
     for index, row in df.iterrows():
         restaurant_dict = row.to_dict()
+
         nearby_restaurants.append(restaurant_dict)
     for restaurant in nearby_restaurants:
         # MongoDB에서 조회하는 부분을 가정하고, 실제 사용하는 DB에 맞게 수정 필요
