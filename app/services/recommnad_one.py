@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from gensim.models import Word2Vec
 
 '''
-### “강남역” 근처 1KM 내의 유사도 가까운 식당 3개
+### 1KM 내의 'foodCategory'와 'moodKeyword'에 유사도 가장 가까운 식당 3개
 
 `F→B(nest)→B(python)` 미국식,[“힙한”, ”분위기좋은”, ”차분한”], 위치(주소, 위도경도)
 `B(python)→B(nest)→ F` 맵핑되는 식당 3개
@@ -27,13 +27,14 @@ def to_float(value):
 user_vectors = []
 def vectorizing_user_moodKeywords(given_moods):
     # Word2Vec 모델 로드
-    model_path = '../assets/mymodelfromreviews/updated_model.model'
+    model_path = '/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/mymodelfromreviews/updated_model.model'
     model = Word2Vec.load(model_path)
 
-    for mood_keywords in given_moods:
+    for mood_keyword in given_moods:
+        print('mood_keyword in given_moods: ',mood_keyword)
         mood_vector = []
 
-        for keyword in mood_keywords.split(','):
+        for keyword in mood_keyword.split(','):
             # 대괄호, 세미콜론, 작은 따옴표 제거
             keyword = keyword.replace('[', '').replace(']', '').replace(';', '').replace("'", "").strip()
 
@@ -45,13 +46,13 @@ def vectorizing_user_moodKeywords(given_moods):
                 print(f"Ignoring '{keyword}' as it is not present in the vocabulary.")
 
         # 모델 vocabulary에 있는 단어가 없으면 most_similar을 통해 대체값 사용
-        if not mood_vector and mood_keywords:
+        if not mood_vector and mood_keyword:
             # 대괄호, 세미콜론 제거
-            mood_keywords = mood_keywords.replace('[', '').replace(']', '').replace(';', '').strip()
+            mood_keyword = mood_keyword.replace('[', '').replace(']', '').replace(';', '').strip()
 
             # 모델 vocabulary에 있는지 확인 후 처리
-            if mood_keywords in model.wv:
-                similar_words = model.wv.most_similar(positive=[mood_keywords], topn=5)
+            if mood_keyword in model.wv:
+                similar_words = model.wv.most_similar(positive=[mood_keyword], topn=5)
                 for similar_word, _ in similar_words:
                     similar_word = similar_word.strip()
                     # 작은 따옴표 제거
@@ -71,9 +72,10 @@ def vectorizing_user_moodKeywords(given_moods):
             vector_str = None
 
         user_vectors.append(vector_str)
-'''
-4. 유저 분위기태그 벡터와 유사한 벡터3개 꾸리기
-'''
+        print('vectorized!')
+        print('user_vectors: ',user_vectors)
+        return user_vectors
+
 # 모든 벡터 간의 유클리드 거리를 계산하는 함수
 def calculate_euclidean_distance(user_vector, rest_vector):
     if len(user_vector) != len(rest_vector):
@@ -81,80 +83,56 @@ def calculate_euclidean_distance(user_vector, rest_vector):
     distance = np.linalg.norm(np.array(user_vector) - np.array(rest_vector))
     return distance
 
+# API
 def restaurants_for_one(recommand_for_one):
-    # CSV 파일 읽기
-    df = pd.read_csv('../assets/swapped_coordinates.csv')
-
-    # 주어진 문장
-    given_category = recommand_for_one.categories
-    given_sentence = recommand_for_one.address_user_entered
+    user_id = recommand_for_one.userId
+    given_category_list = recommand_for_one.categories
     given_moods = recommand_for_one.moodKeywords
-
-    # 주어진 문장의 처음 두 단어 추출
-    first_two_words = ' '.join(given_sentence.split()[:2])
-
-    # 'address' 컬럼에서 주어진 문장의 처음 두 단어로 시작하는 데이터 추출
-    filtered_data = df[df['address'].str.startswith(first_two_words, na=False)]
-
-    # 추출된 데이터의 모든 컬럼값을 딕셔너리로 저장
-    gu_rest_dict_list = filtered_data.to_dict(orient='records')
-    print(f'{first_two_words}에 있는 식당 수: ', len(gu_rest_dict_list))
-
-    # 임의의 기준 식당 좌표
-    base_restaurant_coords = [37.5001716373021, 127.029070884291]
-
-    # 1km 이내에 있는 식당들을 저장할 리스트
-    nearby_restaurants = []
-
-    # coordinates 컬럼 값과 기준 식당 좌표 간의 거리 계산
-    for result_dict in gu_rest_dict_list:
-        coord_str = result_dict.get('coordinates')  # 두번째 옵션은 디폴트값 만약 첫번째 없을시에
-        if coord_str and coord_str.lower() != 'none':
-            coords = [to_float(coord) for coord in coord_str.replace("'", "").strip('[]').split(', ')]
-            if None not in coords:
-                distance = haversine(base_restaurant_coords, (coords[0], coords[1]), unit=Unit.KILOMETERS)
-                if distance <= 1:
-                    nearby_restaurants.append(result_dict)
-
-    print(f'{first_two_words}에 있는 1km 이내의 식당 수: {len(nearby_restaurants)}')
-
-    '''
-    2. 카테고리로 2차 거르기 from nearby_restaurants
-        nearby_restaurants의 foodCategory를 전부 조회하여 user의 카테고리와 같은 식당 리스트 추리기
-    '''
 
     # nearby_restaurants 안의 각 식당에 대해 MongoDB에서 'restaurant' 컬렉션에서 조회 후 카테고리가 일치하는 것을 걸러내기
     cate_filtered_nearby_rests = []
-
     client = MongoClient('mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
     db = client['sniper']
     collection = db['restaurant']
-    print('given_category: ', given_category)
+    # user가 입력한 장소 1km 반경 내 리스트에서 추천
+    df = pd.read_csv(
+        f'/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/restaurants_within_onek_{user_id}.csv')
+    nearby_restaurants = []
+    for index, row in df.iterrows():
+        restaurant_dict = row.to_dict()
+        nearby_restaurants.append(restaurant_dict)
     for restaurant in nearby_restaurants:
         # MongoDB에서 조회하는 부분을 가정하고, 실제 사용하는 DB에 맞게 수정 필요
         queried_data = collection.find_one({'_id': ObjectId(restaurant['_id'])})
-        for category in given_category:
+        for category in given_category_list:
             if queried_data.get('food_category') == category or queried_data.get('foodCategories') == category:
                 cate_filtered_nearby_rests.append(restaurant)
-    print(f'{given_category[0]} 카테고리에 속하는 1km 이내의 식당 수: {len(cate_filtered_nearby_rests)}')
+    print(f'1km 이내의 카테고리에 속하는 식당 수: {len(cate_filtered_nearby_rests)}')
 
     '''
     3. 유저 분위기태그 벡터라이징
     '''
     vectorizing_user_moodKeywords(given_moods)
 
-    user_vectors = user_vectors[0]
+    '''
+    4. 유저 분위기태그 벡터와 유사한 벡터3개 꾸리기
+        비교 : user_vector VS rest['vector'] (in cate_filtered_nearby_rests) 
+    '''
+    user_vector_str = user_vectors[0] # TODO: 위에서 user_vectors 로 안하고 그냥 user_vector로 Refactor later
+
+    # 문자열을 리스트로 변환
+    user_vector_list = eval(user_vector_str)
+    user_vector = [float(num) for num in user_vector_list]
+
     for rest in cate_filtered_nearby_rests:
-        user_vector = [float(num) for num in user_vectors.replace("[", "").replace("]", "").split(",")]
         rest_vector = eval(rest['vector'])
         rest['res_distance'] = calculate_euclidean_distance(user_vector, rest_vector)
 
-    # 거리가 낮은 순으로 정렬된 10개의 식당을 담을 리스트
     four_res_list = sorted(cate_filtered_nearby_rests, key=lambda x: x['res_distance'])[:4]
-
     four_id_list = []
-    # 결과 출력
+
     for res in four_res_list:
-        print('restaurant name: ', res['name'])
+        print("recommmnaded restaurants' name: ", res['name'])
         four_id_list.append(res['_id'])
     return four_id_list
+
