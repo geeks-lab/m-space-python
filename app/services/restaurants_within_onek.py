@@ -36,7 +36,9 @@ def convert_coords_to_address(latitude, longitude):
         return None
 
 # API
-def api_restaurants_within_onek(base_coords):
+def api_restaurants_within_onek(restaurants_within_onek):
+    user_id = restaurants_within_onek.userId
+    base_coords = restaurants_within_onek.base_coords
     longitude = base_coords[0]
     latitude = base_coords[1]
     given_address = convert_coords_to_address(latitude, longitude)
@@ -62,8 +64,8 @@ def api_restaurants_within_onek(base_coords):
     # CSV 파일로 저장
     if nearby_restaurants:
         nearby_df = pd.DataFrame(nearby_restaurants)
-        file_path = '/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/restaurants_within_onek.csv'
-        nearby_df.to_csv(file_path, index=False)
+        nearby_df.to_csv(f'/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/restaurants_within_onek_{user_id}.csv')
+        print(f'csv for {user_id} has been downloaded!')
 
     print(f' 1km 이내의 식당 수: {len(nearby_restaurants)}')
     rest_id_list = []

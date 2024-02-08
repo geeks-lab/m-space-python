@@ -17,7 +17,7 @@ class Restaurants_within_onek(BaseModel):
 
 @app.post("/restaurants/withinonek")
 async def restaurants_within_onek(restaurants_within_onek: Restaurants_within_onek):
-    processed_result = api_restaurants_within_onek(restaurants_within_onek.base_coords)
+    processed_result = api_restaurants_within_onek(restaurants_within_onek)
     return JSONResponse(content={"userId": restaurants_within_onek.userId,
                                 "restaurant_id_list": processed_result})
 
@@ -36,7 +36,6 @@ async def process_moodkeywords(moodkeywords_sentence: Moodkeywords_sentence):
 # 확정된 무드키워드로 추천 식당 요청
 class Recommand_for_one(BaseModel):
     userId: str
-    address_user_entered: str
     moodKeywords: list
     categories: list
 
