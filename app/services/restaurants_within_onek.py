@@ -47,7 +47,11 @@ def api_restaurants_within_onek(restaurants_within_onek):
         print("주소를 찾을 수 없습니다.")
         return []
 
-    df = pd.read_csv('/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/swapped_coordinates.csv')
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(current_path, "../assets/swapped_coordinates.csv")
+    csv_path = os.path.normpath(csv_path)
+
+    df = pd.read_csv(csv_path)
     df['address'] = df['address'].fillna('')
     second_word = given_address.split()[1]  # '강남구'
     filtered_data = df[df['address'].apply(lambda x: len(x.split()) > 1 and x.split()[1] == second_word)]
