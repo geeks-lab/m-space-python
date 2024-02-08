@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from app.services.finding_matching_mkeywords import moodKeywords_sentence_to_our_keywords
 from app.services.tockenizing_foodcategory import tockenizing_foodcategory
 from app.services.recommnad_one import restaurants_for_one
-from app.services.recommnad_two_sklearn import restaurants_for_many
+#from app.services.recommnad_two_sklearn import restaurants_for_many
 from app.services.restaurants_within_onek import api_restaurants_within_onek
 from fastapi import FastAPI, HTTPException
 from pymongo import MongoClient
@@ -17,12 +17,32 @@ client = MongoClient(
 db = client["sniper"]
 collection = db["user_csv"]
 
+from pymongo import UpdateOne
+
 def insert_restaurants(restaurants):
     try:
-        result = collection.insert_many(restaurants)
-        print(f"{len(result.inserted_ids)} documents inserted successfully.")
+        bulk_operations = []  # 업데이트 또는 삽입을 위한 작업 목록
+
+        for restaurant in restaurants:
+            # 기존 `_id`가 있는지 확인
+            existing_restaurant = collection.find_one({"_id": restaurant["_id"]})
+
+            if existing_restaurant:
+                # 이미 존재하는 경우 업데이트를 위한 작업 추가
+                bulk_operations.append(
+                    UpdateOne({"_id": restaurant["_id"]}, {"$set": restaurant})
+                )
+            else:
+                # 존재하지 않는 경우 삽입을 위해 바로 MongoDB에 추가
+                collection.insert_one(restaurant)
+
+        # bulk_write를 사용하여 업데이트 및 삽입 작업을 실행
+        if bulk_operations:
+            collection.bulk_write(bulk_operations)
+
     except Exception as e:
-        raise Exception(f"Error inserting data into MongoDB: {e}")
+        raise Exception(f"Error inserting or updating data into MongoDB: {e}")
+
 
 
 # 사용자 장소 반경 1km내 식당 리스트
@@ -67,14 +87,14 @@ async def recommand_for_one(recommand_for_one: Recommand_for_one):
     return JSONResponse(content={"userId": recommand_for_one.userId,
                                 "restaurants_id": processed_result})
 
-# 교집합 추천 식당 요청
-class Recommand_for_many(BaseModel):
-    userId: str
-    restaurant_id_list: list
-
-@app.post("/restaurants/formany")
-async def recommand_for_many(recommand_for_many: Recommand_for_many):
-    processed_result = restaurants_for_many(recommand_for_many.restaurant_id_list)
-
-    return JSONResponse(content={"userId": recommand_for_one.userId,
-                                "restaurants_id": processed_result})
+# # 교집합 추천 식당 요청
+# class Recommand_for_many(BaseModel):
+#     userId: str
+#     restaurant_id_list: list
+#
+# @app.post("/restaurants/formany")
+# async def recommand_for_many(recommand_for_many: Recommand_for_many):
+#     processed_result = restaurants_for_many(recommand_for_many.restaurant_id_list)
+#
+#     return JSONResponse(content={"userId": recommand_for_one.userId,
+#                                 "restaurants_id": processed_result})
