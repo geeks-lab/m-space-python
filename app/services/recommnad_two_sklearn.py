@@ -12,6 +12,10 @@ import ast
 from sklearn.neighbors import NearestNeighbors
 
 load_dotenv()
+# Connect to MongoDB
+client = MongoClient('mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
+db = client['sniper']
+collection = db['user_csv']
 
 def to_float(value):
     try:
@@ -42,22 +46,22 @@ def convert_coords_to_address(latitude, longitude):
 def find_matching_ids(target_vectors):
     matching_ids = []
     for target_vector in target_vectors:
-        for index, row in df.iterrows():
-            if pd.notna(row['vector']):
-                current_vector = ast.literal_eval(row['vector'])
+        for item in collection.find({}):
+            if 'vector' in item:
+                current_vector = ast.literal_eval(item['vector'])
                 if target_vector == current_vector:
-                    matching_ids.append(row['_id'])
+                    matching_ids.append(item['_id'])
     return matching_ids
 
 def restid_to_restvec(rest_id):
-    filtered_row = df[df['_id'].str.contains(rest_id, case=False, na=False)]
-    if not filtered_row.empty:
-        vector_str = filtered_row['vector'].iloc[0]
+    result = collection.find_one({"_id": rest_id})
+    if result and 'vector' in result:
+        vector_str = result['vector']
         desired_vector = ast.literal_eval(vector_str) if pd.notna(vector_str) else None
         print(f"The 'vector' value for the desired id '{rest_id}' is: {desired_vector}")
         return desired_vector
     else:
-        print(f"No matching rows found for the desired id '{rest_id}'.")
+        print(f"No matching document found for the desired id '{rest_id}'.")
         return None
 
 def getting_mid_c(rest_a_vec, rest_b_vec):
@@ -94,17 +98,19 @@ def restaurants_for_many(restaurant_id_list):
 
     return matching_ids
 
-# Connect to MongoDB
-client = MongoClient('mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
-db = client['sniper']
-collection = db['user_csv']
+import ast
 
 # Load vector dataset from MongoDB
 vector_dataset = []
 for item in collection.find({}):
-    vector = ast.literal_eval(item['vector'])
-    vector_dataset.append(vector)
+    if 'vector' in item:
+        vector_str = item['vector']
+        if vector_str == 'NaN':  # NaN 값 처리
+            vector = np.nan
+        else:
+            vector = ast.literal_eval(vector_str)
+        vector_dataset.append(vector)
 
 vector_dataset = np.array(vector_dataset)
 
-# Now you can use restaurants_for_many function
+

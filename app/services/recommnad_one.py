@@ -95,7 +95,7 @@ def restaurants_for_one(recommand_for_one):
     client = MongoClient(
         'mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
     db = client['sniper']
-    collection = db['restaurant']
+    collection = db['user_csv']
 
     # MongoDB에서 식당 데이터 가져오기
     nearby_restaurants = collection.find()
