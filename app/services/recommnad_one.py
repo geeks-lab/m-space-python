@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 from bson import ObjectId
@@ -27,7 +29,9 @@ def to_float(value):
 user_vectors = []
 def vectorizing_user_moodKeywords(given_moods):
     # Word2Vec 모델 로드
-    model_path = '/Users/finallyfinn/Desktop/projects/krafton/backend-python/app/assets/mymodelfromreviews/updated_model.model'
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(current_path, "../assets/mymodelfromreviews/updated_model.model")
+    model_path = os.path.normpath(model_path)
     model = Word2Vec.load(model_path)
 
     for mood_keyword in given_moods:
