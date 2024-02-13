@@ -74,18 +74,18 @@ async def process_moodkeywords(moodkeywords_sentence: Moodkeywords_sentence):
     return JSONResponse(content={"userId": moodkeywords_sentence.userId,
                                 "words": processed_result})
 
-# 확정된 무드키워드로 추천 식당 요청
-class Recommand_for_one(BaseModel):
-    userId: str
-    moodKeywords: list
-    categories: list
-
-@app.post("/restaurants/forone")
-async def recommand_for_one(recommand_for_one: Recommand_for_one):
-    processed_result = restaurants_for_one(recommand_for_one)
-
-    return JSONResponse(content={"userId": recommand_for_one.userId,
-                                "restaurants_id": processed_result})
+# # 확정된 무드키워드로 추천 식당 요청
+# class Recommand_for_one(BaseModel):
+#     userId: str
+#     moodKeywords: list
+#     categories: list
+#
+# @app.post("/restaurants/forone")
+# async def recommand_for_one(recommand_for_one: Recommand_for_one):
+#     processed_result = restaurants_for_one(recommand_for_one)
+#
+#     return JSONResponse(content={"userId": recommand_for_one.userId,
+#                                 "restaurants_id": processed_result})
 
 
 class Foodcategories_senctence(BaseModel):
