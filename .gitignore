@@ -8,7 +8,8 @@ env/
 .DS_Store
 .idea/
 app/.DS_Store
-
+Dockerfile
+requirements.txt
 
 ### Database ###
 *.accdb
@@ -355,3 +356,5 @@ temp/updated_file.csv
 temp/vectors_without_coordinates.csv
 
 temp/vectors_without_coordinates2.csv
+
+freeze

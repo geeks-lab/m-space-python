@@ -87,6 +87,18 @@ async def recommand_for_one(recommand_for_one: Recommand_for_one):
     return JSONResponse(content={"userId": recommand_for_one.userId,
                                 "restaurants_id": processed_result})
 
+
+class Foodcategories_senctence(BaseModel):
+    userId: str
+    sentence: str
+
+@app.post("/foodcategories/speech")
+async def process_foodcategories(foodcategories_senctence: Foodcategories_senctence):
+    processed_result = tockenizing_foodcategory(foodcategories_senctence.sentence)
+
+    return JSONResponse(content={"userId": foodcategories_senctence.userId,
+                                 "words": processed_result})
+
 # # 교집합 추천 식당 요청
 # class Recommand_for_many(BaseModel):
 #     userId: str
