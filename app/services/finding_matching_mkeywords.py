@@ -99,7 +99,7 @@ def moodKeywords_sentence_to_our_keywords(text):
     top_similarities_dict = {}
     for word1 in extracted_adjectives:
         # 각 형용사마다 상위 5개의 유사한 단어를 찾음
-        similar_words = sorted(moodKeywords, key=lambda x: compute_similarity(model, word1, x), reverse=True)[:5]
+        similar_words = sorted(moodKeywords, key=lambda x: compute_similarity(model, word1, x), reverse=True)[:3]
         top_similarities_dict[word1] = similar_words
 
     # 결과 출력
@@ -108,7 +108,7 @@ def moodKeywords_sentence_to_our_keywords(text):
         print(f"Top similarities for '{word1}': {similar_words}")
 
     # 각 word1에 대해 가장 높은 유사성을 가진 상위 다섯 개의 word2를 저장하는 리스트 생성
-    top_5moods_dict = [{'word1': word1, 'top_5_moods': sorted(similar_words, key=lambda x: compute_similarity(model, word1, x), reverse=True)[:5]} for word1, similar_words in top_similarities_dict.items()]
+    top_5moods_dict = [{'word1': word1, 'top_5_moods': sorted(similar_words, key=lambda x: compute_similarity(model, word1, x), reverse=True)[:3]} for word1, similar_words in top_similarities_dict.items()]
 
     # 결과 출력
     print("\ntop_5moods_dict:", top_5moods_dict)
