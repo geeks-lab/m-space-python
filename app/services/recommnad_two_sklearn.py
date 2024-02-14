@@ -39,7 +39,6 @@ for item in collection.find({}):
             }
             vector_dataset_info_list.append(vector_info)
             vector_dataset.append(vector)
-            print(f'{item["name"]}vector_dataset has been appended!')
 
 vector_dataset = np.array(vector_dataset)
 
@@ -286,8 +285,8 @@ def restaurants_for_many(restaurant_id_list):
         # 가장 가까운 세 개의 데이터포인트의 _id를 추출하여 리스트에 추가
         closest_three_rests_ids = [it['_id'] for it in sorted_vector_dataset_info_list]
 
-        print('closest_three_rests_ids: ', closest_three_rests_ids)
-        return closest_three_rests_ids
+        print('closest_three_rests_ids: ', closest_three_rests_ids[:3])
+        return closest_three_rests_ids[:3]
 
     else:
         print('레스토랑에 무드키워드가 없어서 아마 벡터값이 없어서 여기로 오게된 것일 겁니다.')
