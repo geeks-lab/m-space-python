@@ -1,11 +1,9 @@
 import os
-
 import numpy as np
-import pandas as pd
-from bson import ObjectId
-from haversine import haversine, Unit
-from pymongo import MongoClient
+from fastapi import Request, HTTPException, FastAPI
 from gensim.models import Word2Vec
+
+app = FastAPI()
 
 '''
 ### 1KM 내의 'foodCategory'와 'moodKeyword'에 유사도 가장 가까운 식당 3개
@@ -35,7 +33,7 @@ def vectorizing_user_moodKeywords(given_moods):
     model = Word2Vec.load(model_path)
 
     for mood_keyword in given_moods:
-        print('mood_keyword in given_moods: ',mood_keyword)
+        print('mood_keyword in given_moods: ', mood_keyword)
         mood_vector = []
 
         for keyword in mood_keyword.split(','):
@@ -87,22 +85,53 @@ def calculate_euclidean_distance(user_vector, rest_vector):
     distance = np.linalg.norm(np.array(user_vector) - np.array(rest_vector))
     return distance
 
+@app.get("/api/restaurants")
+async def get_from_redis_server(request: Request, roomId):
+    try:
+        redis_server_url = f"http://43.203.17.229:8080/api/restaurants?roomId={roomId}"
+        response = request.get(redis_server_url)
+        if response.status_code == 200:
+            print('해치웠나')
+            return response.json()
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to get data from redis server")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # API
 def restaurants_for_one(recommand_for_one):
     user_id = recommand_for_one.userId
+    room_id = recommand_for_one.roomId
     given_category_list = recommand_for_one.categories
     given_moods = recommand_for_one.moodKeywords
 
     cate_filtered_nearby_rests = []
+    nearby_restaurants = []
 
     # MongoDB 연결
-    client = MongoClient(
-        'mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
-    db = client['sniper']
-    collection = db['user_csv']
+    # client = MongoClient(
+    #     'mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
+    # db = client['sniper']
+    # collection = db['user_csv']
 
     # MongoDB에서 식당 데이터 가져오기
-    nearby_restaurants = collection.find()
+    #nearby_restaurants = collection.find()
+
+    result_from_redis = get_from_redis_server(room_id)
+    nearby_restaurants_redis = result_from_redis.get("restaurantSimpleDtoList",
+                                               [])  # restaurantSimpleDtoList 키가 없으면 빈 리스트로 초기화
+    print('result_from_redis: ', result_from_redis)
+    # 사용자가 입력한 카테고리와 일치하는 식당 필터링
+    for restaurant in nearby_restaurants_redis:
+        # 딕셔너리 형태의 데이터를 MongoDB의 컬렉션에 있는 식당 데이터 형식에 맞게 변환
+        restaurant_data = {
+            "_id": restaurant["id"],
+            "food_category": restaurant["foodCategory"],
+            "foodCategories": [restaurant["foodCategory"]],
+            "moodKeywords": restaurant["moodKeywords"],
+            "menus": restaurant["menus"] if "menus" in restaurant else None,
+        }
+        nearby_restaurants.append(restaurant_data)
 
     # 사용자가 입력한 카테고리와 일치하는 식당 필터링
     for restaurant in nearby_restaurants:
