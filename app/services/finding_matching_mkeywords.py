@@ -92,8 +92,8 @@ def moodKeywords_sentence_to_our_keywords(text):
     similarities = calculate_similarity_for_combinations(model, extracted_adjectives, moodKeywords)
 
     # 결과 출력
-    for word1, word2, similarity in similarities:
-        print(f"Similarity between '{word1}' and '{word2}': {similarity}")
+    # for word1, word2, similarity in similarities:
+    #     print(f"Similarity between '{word1}' and '{word2}': {similarity}")
 
     # 각 word1에 대해 가장 높은 유사성을 가진 상위 다섯 개의 word2를 저장하는 딕셔너리 생성
     top_similarities_dict = {}
