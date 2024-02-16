@@ -77,5 +77,5 @@ def api_restaurants_within_onek(restaurants_within_onek):
     for rest in nearby_restaurants:
         rest_id_list.append(rest["_id"])
     print(f' 1km 이내의 식당 수: {len(nearby_restaurants)}')
-    return rest_id_list, nearby_restaurants
+    return rest_id_list
 

@@ -1,9 +1,7 @@
 import os
 import numpy as np
-from fastapi import Request, HTTPException, FastAPI
 from gensim.models import Word2Vec
 
-app = FastAPI()
 
 '''
 ### 1KM 내의 'foodCategory'와 'moodKeyword'에 유사도 가장 가까운 식당 3개
@@ -80,58 +78,47 @@ def vectorizing_user_moodKeywords(given_moods):
 
 # 모든 벡터 간의 유클리드 거리를 계산하는 함수
 def calculate_euclidean_distance(user_vector, rest_vector):
+    print('calculate_euclidean_distance func is called!')
+    print("rest['vector'] test(rest_vector): ", rest_vector)
     if len(user_vector) != len(rest_vector):
         raise ValueError("Vector dimensions do not match.")
     distance = np.linalg.norm(np.array(user_vector) - np.array(rest_vector))
     return distance
 
-@app.get("/api/restaurants")
-async def get_from_redis_server(request: Request, roomId):
-    try:
-        redis_server_url = f"http://43.203.17.229:8080/api/restaurants?roomId={roomId}"
-        response = request.get(redis_server_url)
-        if response.status_code == 200:
-            print('해치웠나')
-            return response.json()
-        else:
-            raise HTTPException(status_code=response.status_code, detail="Failed to get data from redis server")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 # API
-def restaurants_for_one(recommand_for_one):
+def restaurants_for_one(recommand_for_one, redis_result):
     user_id = recommand_for_one.userId
-    room_id = recommand_for_one.roomId
     given_category_list = recommand_for_one.categories
     given_moods = recommand_for_one.moodKeywords
 
     cate_filtered_nearby_rests = []
     nearby_restaurants = []
+    nearby_restaurants_redis = []
 
-    # MongoDB 연결
-    # client = MongoClient(
-    #     'mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
-    # db = client['sniper']
-    # collection = db['user_csv']
+    # 유저 분위기 태그 벡터화
+    vectorizing_user_moodKeywords(given_moods)
 
-    # MongoDB에서 식당 데이터 가져오기
-    #nearby_restaurants = collection.find()
+    user_vector_str = user_vectors[0]
+    user_vector_list = eval(user_vector_str)
+    user_vector = [float(num) for num in user_vector_list]
 
-    result_from_redis = get_from_redis_server(room_id)
-    nearby_restaurants_redis = result_from_redis.get("restaurantSimpleDtoList",
-                                               [])  # restaurantSimpleDtoList 키가 없으면 빈 리스트로 초기화
-    print('result_from_redis: ', result_from_redis)
-    # 사용자가 입력한 카테고리와 일치하는 식당 필터링
+    nearby_restaurants_redis = redis_result.get("restaurantSimpleDtoList", [])
+
     for restaurant in nearby_restaurants_redis:
-        # 딕셔너리 형태의 데이터를 MongoDB의 컬렉션에 있는 식당 데이터 형식에 맞게 변환
         restaurant_data = {
-            "_id": restaurant["id"],
-            "food_category": restaurant["foodCategory"],
-            "foodCategories": [restaurant["foodCategory"]],
-            "moodKeywords": restaurant["moodKeywords"],
+            "id": restaurant["id"],
+            "food_category": restaurant["foodCategory"] if "foodCategory" in restaurant else None,
+            "foodCategories": [restaurant["foodCategory"]] if "foodCategory" in restaurant else None,
+            "moodKeywords": restaurant["moodKeywords"] if "moodKeywords" in restaurant else None,
             "menus": restaurant["menus"] if "menus" in restaurant else None,
+            "vector": user_vector
         }
         nearby_restaurants.append(restaurant_data)
+
+    # test print
+    for res in nearby_restaurants:
+        print(f"res_id: {res['id']} / moodKeywords: {res['moodKeywords']}")
 
     # 사용자가 입력한 카테고리와 일치하는 식당 필터링
     for restaurant in nearby_restaurants:
@@ -141,26 +128,19 @@ def restaurants_for_one(recommand_for_one):
 
     print(f'1km 이내의 카테고리에 속하는 식당 수: {len(cate_filtered_nearby_rests)}')
 
-    # 유저 분위기 태그 벡터화
-    vectorizing_user_moodKeywords(given_moods)
-
-    user_vector_str = user_vectors[0]  # TODO: user_vectors 변수명 수정
-    user_vector_list = eval(user_vector_str)
-    user_vector = [float(num) for num in user_vector_list]
 
     # 유사한 식당 찾기
     for rest in cate_filtered_nearby_rests:
-        rest_vector = eval(rest['vector'])
-        rest['res_distance'] = calculate_euclidean_distance(user_vector, rest_vector)
+        rest_vector_list_type = rest['vector']
+        rest['res_distance'] = calculate_euclidean_distance(user_vector, rest_vector_list_type)
 
     # 가장 유사한 식당들 선택
-    four_res_list = sorted(cate_filtered_nearby_rests, key=lambda x: x['res_distance'])[:4]
-    four_id_list = []
+    five_res_list = sorted(cate_filtered_nearby_rests, key=lambda x: x['res_distance'])[:5]
+    five_id_list = []
 
-    for res in four_res_list:
-        print("Recommended restaurant name: ", res['name'])
-        four_id_list.append(res['_id'])
-
-    return four_id_list
+    for res in five_res_list:
+        five_id_list.append(res['id'])
+    print(f'{len(five_res_list)} number of restaurants have been returned!')
+    return five_id_list
 
 
