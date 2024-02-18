@@ -358,3 +358,7 @@ temp/vectors_without_coordinates.csv
 temp/vectors_without_coordinates2.csv
 
 freeze
+
+.env
+
+Dockerfile
