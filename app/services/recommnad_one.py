@@ -103,7 +103,7 @@ def restaurants_for_one(recommand_for_one, redis_result):
     user_vector_list = eval(user_vector_str)
     user_vector = [float(num) for num in user_vector_list]
 
-    nearby_restaurants_redis = redis_result.get("restaurantSimpleDtoList", [])
+    nearby_restaurants_redis = redis_result.get("restaurantDtoList", [])
 
     for restaurant in nearby_restaurants_redis:
         restaurant_data = {

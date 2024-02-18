@@ -74,9 +74,8 @@ async def process_moodkeywords(moodkeywords_sentence: Moodkeywords_sentence):
                                 "words": processed_result})
 
 
-
 async def request_onek_rest_list_to_redis(roomId):
-    url = "http://43.203.17.229:8080/api/restaurants"
+    url = "http://43.203.17.229:8080/api/restaurants/simple"
     room_id = roomId
 
     headers = {'Content-Type': 'application/json'}
@@ -101,6 +100,7 @@ class Recommand_for_one(BaseModel):
 @app.post("/restaurants/forone")
 async def recommand_for_one(recommand_for_one: Recommand_for_one):
     redis_result = await request_onek_rest_list_to_redis(recommand_for_one.roomId)
+    # print("redis_result::::::", redis_result)
     processed_result = restaurants_for_one(recommand_for_one, redis_result)
 
     return JSONResponse(content={"userId": recommand_for_one.userId,
