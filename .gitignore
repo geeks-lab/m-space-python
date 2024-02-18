@@ -306,55 +306,8 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-<<<<<<< Updated upstream
-# End of https://www.toptal.com/developers/gitignore/api/python,pycharm,database
-=======
-# End of https://www.toptal.com/developers/gitignore/api/python,pycharm,database
-temp/Untitled.ipynb
-
 app/assets/fasttextmodel/cc.ko.300.bin
 
-temp/one_hot_encoded.csv
-
-temp/restaurant_data.csv
-
 app/assets/mymodelfromreviews/word2vec-from-reviews.model
->>>>>>> Stashed changes
-
-temp/coordinates_added_quarter1.csv
-
-temp/coordinates_added_quarter2.csv
-
-temp/coordinates_added_quarter3.csv
-
-temp/coordinates_added_quarter4.csv
-
-temp/coordinates_added.csv
-
-temp/formatted_output_file.csv
-
-temp/output_file.csv
-
-temp/output1.csv
-
-temp/output2.csv
-
-temp/quarter1.csv
-
-temp/quarter2.csv
-
-temp/quarter3.csv
-
-temp/quarter4.csv
-
-temp/restaurant_data2.csv
-
-temp/testfile_with_address.csv
-
-temp/updated_file.csv
-
-temp/vectors_without_coordinates.csv
-
-temp/vectors_without_coordinates2.csv
 
 freeze
