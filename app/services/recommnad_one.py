@@ -6,9 +6,6 @@ from gensim.models import Word2Vec
 '''
 ### 1KM 내의 'foodCategory'와 'moodKeyword'에 유사도 가장 가까운 식당 3개
 
-`F→B(nest)→B(python)` 미국식,[“힙한”, ”분위기좋은”, ”차분한”], 위치(주소, 위도경도)
-`B(python)→B(nest)→ F` 맵핑되는 식당 3개
-
 1. 위치로부터 1km 내 레스토랑 리스트 꾸리기
 2. 카테고리로 2차 거르기
     nearby_restaurants의 foodCategory를 전부 조회하여 user의 카테고리와 같은 식당 리스트 추리기
