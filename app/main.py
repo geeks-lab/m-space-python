@@ -133,6 +133,7 @@ async def recommand_for_many(recommand_for_many: Recommand_for_many):
     num_users = 4
     center_res = []
     processed_result = []
+    user_id_list = recommand_for_many.restaurant_id_list
     '''
     processed_result = ['센터',
                         '1_given_res_a', '2_given_res_b', '3_given_res_c', '4_given_res_d',
@@ -144,25 +145,56 @@ async def recommand_for_many(recommand_for_many: Recommand_for_many):
 
 
     # 프론트에서 받은 식당 네개 먼저 processed_result에 추가하기
-    for requesting_res_id in recommand_for_many.restaurant_id_list:
-        processed_result.append(requesting_res_id)
+    for id in user_id_list:
+        processed_result.append(id)
 
     # 센터 계산하기
     processed_result_1 = []
     processed_result_2 = []
-    processed_result_1 = restaurants_for_many(recommand_for_many.restaurant_id_list[:2], recommand_for_many) # a & b
-    processed_result_2 = restaurants_for_many(recommand_for_many.restaurant_id_list[2:4], recommand_for_many) # c & d
+    processed_result_1 = restaurants_for_many(user_id_list[:2], recommand_for_many) # a & b
+    print('processed_result_1', processed_result_1)
+    processed_result_2 = restaurants_for_many(user_id_list[2:4], recommand_for_many) # c & d
     print('processed_result_2: ', processed_result_2)
 
-    comb_a_n_b = processed_result_1[0]
-    comb_c_n_d = processed_result_2[0]
-    center_res = restaurants_for_many(comb_a_n_b + comb_c_n_d, recommand_for_many) # cent
+    comb_abcd = [processed_result_1[0]]
+    comb_abcd.append(processed_result_2[0])
+    print('comb_abcd: ', comb_abcd)
+
+    center_res = restaurants_for_many(comb_abcd, recommand_for_many) # cent
+    print('center_res: ', center_res)
+    print('center_res type: ', type(center_res))
 
     # 센터와 각 4개 식당 계산하기
-    for i in range(num_users):
-        processed_result.append(restaurants_for_many(center_res + recommand_for_many.restaurant_id_list[i],
-                                                     recommand_for_many))
+    user_a = [user_id_list[0]]
+    user_b = [user_id_list[1]]
+    user_c = [user_id_list[2]]
+    user_d = [user_id_list[3]]
+    print("user_a = [user_id_list[0]]: ", user_a)
 
-    processed_result.append(center_res)
+    user_a.append(center_res[0])
+    print("user_a.append(center_res): ", user_a)
+    user_b.append(center_res[0])
+    user_c.append(center_res[0])
+    user_d.append(center_res[0])
+
+    each_with_center = []
+    user_a_results = restaurants_for_many(user_a, recommand_for_many)
+    each_with_center.append(user_a_results[3])
+    print('each_with_center after user a: ', each_with_center)
+    user_b_results = restaurants_for_many(user_b, recommand_for_many)
+    each_with_center.append(user_b_results[3])
+    print('each_with_center after user b: ', each_with_center)
+    user_c_results = restaurants_for_many(user_c, recommand_for_many)
+    each_with_center.append(user_c_results[3])
+    print('each_with_center after user c: ', each_with_center)
+    user_d_results = restaurants_for_many(user_d, recommand_for_many)
+    each_with_center.append(user_d_results[3])
+    print('each_with_center after user d: ', each_with_center)
+
+    for i in range(4):
+        processed_result.append(each_with_center[i])
+
+    processed_result.append(center_res[0])
+    print('processed_result: ', processed_result)
 
     return JSONResponse(content={"restaurant_id_list": processed_result})
