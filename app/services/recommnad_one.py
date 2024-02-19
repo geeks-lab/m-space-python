@@ -23,7 +23,7 @@ user_vectors = []
 def vectorizing_user_moodKeywords(given_moods):
     # Word2Vec 모델 로드
     current_path = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(current_path, "../assets/mymodelfromreviews/updated_model.model")
+    model_path = os.path.join(current_path, "../assets/mymodelfromreviews/modelfromreviews2.model")
     model_path = os.path.normpath(model_path)
     model = Word2Vec.load(model_path)
 
@@ -101,12 +101,12 @@ def restaurants_for_one(recommand_for_one, redis_result):
     user_vector = [float(num) for num in user_vector_list]
 
     nearby_restaurants_redis = redis_result.get("restaurantDtoList", [])
-
+    print('num of the nearby_restaurants_redis', len(nearby_restaurants_redis))
     for restaurant in nearby_restaurants_redis:
         restaurant_data = {
             "id": restaurant["id"],
-            "food_category": restaurant["foodCategory"] if "foodCategory" in restaurant else None,
-            "foodCategories": [restaurant["foodCategory"]] if "foodCategory" in restaurant else None,
+            "food_category": restaurant["food_category"] if "food_category" in restaurant else None,
+            "foodCategories": [restaurant["foodCategories"]] if "foodCategories" in restaurant else None,
             "moodKeywords": restaurant["moodKeywords"] if "moodKeywords" in restaurant else None,
             "menus": restaurant["menus"] if "menus" in restaurant else None,
             "vector": user_vector
@@ -116,12 +116,15 @@ def restaurants_for_one(recommand_for_one, redis_result):
     # test print
     for res in nearby_restaurants:
         print(f"res_id: {res['id']} / moodKeywords: {res['moodKeywords']}")
-
     # 사용자가 입력한 카테고리와 일치하는 식당 필터링
     for restaurant in nearby_restaurants:
-        for category in given_category_list:
-            if restaurant.get('food_category') == category or restaurant.get('foodCategories') == category:
-                cate_filtered_nearby_rests.append(restaurant)
+        if 'food_category' in restaurant and 'foodCategories' in restaurant:
+            for category in given_category_list:
+                if restaurant['food_category'] == category or restaurant['foodCategories'] == category:
+                    cate_filtered_nearby_rests.append(restaurant)
+        else:
+            print("Warning: 'food_category' 또는 'foodCategories' 키가 없습니다.")
+
 
     print(f'1km 이내의 카테고리에 속하는 식당 수: {len(cate_filtered_nearby_rests)}')
 
