@@ -44,7 +44,7 @@ def extract_adjectives(text):
     return words
 
 current_path = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(current_path, "../assets/mymodelfromreviews/updated_model.model")
+model_path = os.path.join(current_path, "../assets/mymodelfromreviews/modelfromreviews2.model")
 model_path = os.path.normpath(model_path)
 
 model = Word2Vec.load(model_path)
