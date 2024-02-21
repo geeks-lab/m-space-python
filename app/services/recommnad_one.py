@@ -64,13 +64,15 @@ def vectorizing_user_moodKeywords(given_moods):
         compressed_vector = sum(mood_vector) / len(mood_vector) if mood_vector else None
         # If compressed_vector is not None, convert it to a string with commas between values
         if compressed_vector is not None:
-            vector_str = '[' + ', '.join(map(str, compressed_vector)) + ']'
+            #vector_str = '[' + ', '.join(map(str, compressed_vector)) + ']'
+            vector_str = ', '.join(map(str, compressed_vector))
         else:
             vector_str = None
 
         user_vectors.append(vector_str)
         print('vectorized!')
-        print('user_vectors: ',user_vectors)
+        # print('user_vectors: ',user_vectors)
+        # print('user_vectors type: ', type(user_vectors))
         return user_vectors
 
 # 모든 벡터 간의 유클리드 거리를 계산하는 함수
@@ -88,6 +90,7 @@ def restaurants_for_one(recommand_for_one, redis_result):
     user_id = recommand_for_one.userId
     given_category_list = recommand_for_one.categories
     given_moods = recommand_for_one.newMoods
+    print('given_moods : ', given_moods)
 
     cate_filtered_nearby_rests = []
     nearby_restaurants = []
@@ -99,6 +102,7 @@ def restaurants_for_one(recommand_for_one, redis_result):
     user_vector_str = user_vectors[0]
     user_vector_list = eval(user_vector_str)
     user_vector = [float(num) for num in user_vector_list]
+    print('user_vector a')
 
     nearby_restaurants_redis = redis_result.get("restaurantDtoList", [])
     print('num of the nearby_restaurants_redis', len(nearby_restaurants_redis))
