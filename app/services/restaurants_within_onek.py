@@ -55,7 +55,7 @@ def api_restaurants_within_onek(restaurants_within_onek):
         return []
 
     current_path = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(current_path, "../assets/swapped_coordinates.csv")
+    csv_path = os.path.join(current_path, "../assets/merged_data.csv")
     csv_path = os.path.normpath(csv_path)
 
     df = pd.read_csv(csv_path)
