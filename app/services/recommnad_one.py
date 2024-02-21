@@ -87,7 +87,7 @@ def calculate_euclidean_distance(user_vector, rest_vector):
 def restaurants_for_one(recommand_for_one, redis_result):
     user_id = recommand_for_one.userId
     given_category_list = recommand_for_one.categories
-    given_moods = recommand_for_one.moodKeywords
+    given_moods = recommand_for_one.newMoods
 
     cate_filtered_nearby_rests = []
     nearby_restaurants = []
@@ -107,7 +107,7 @@ def restaurants_for_one(recommand_for_one, redis_result):
             "id": restaurant["id"],
             "food_category": restaurant["food_category"] if "food_category" in restaurant else None,
             "foodCategories": [restaurant["foodCategories"]] if "foodCategories" in restaurant else None,
-            "moodKeywords": restaurant["moodKeywords"] if "moodKeywords" in restaurant else None,
+            "newMoods": restaurant["newMoods"] if "newMoods" in restaurant else None,
             "menus": restaurant["menus"] if "menus" in restaurant else None,
             "vector": user_vector
         }
@@ -115,7 +115,7 @@ def restaurants_for_one(recommand_for_one, redis_result):
 
     # test print
     for res in nearby_restaurants:
-        print(f"res_id: {res['id']} / moodKeywords: {res['moodKeywords']}")
+        print(f"res_id: {res['id']} / newMoods: {res['newMoods']}")
     # 사용자가 입력한 카테고리와 일치하는 식당 필터링
     for restaurant in nearby_restaurants:
         if 'food_category' in restaurant and 'foodCategories' in restaurant:

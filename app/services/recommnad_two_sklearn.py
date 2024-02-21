@@ -14,7 +14,7 @@ from geopy.distance import geodesic
 load_dotenv()
 client = MongoClient('mongodb+srv://jiyoung:jiyoung1234^^@favsniper.gg9uyie.mongodb.net/?retryWrites=true&w=majority')
 db = client['sniper']
-collection = db['user_csv']
+collection = db['restaurant']
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 csv_path = os.path.join(current_path, "../assets/swapped_coordinates.csv")
@@ -62,7 +62,7 @@ async def get_rest_within_onek_from_redis(redis_result_from_main):
                 "id": restaurant["id"],
                 "food_category": restaurant["food_category"] if "food_category" in restaurant else None,
                 "foodCategories": [restaurant["foodCategories"]] if "foodCategories" in restaurant else None,
-                "moodKeywords": restaurant["moodKeywords"] if "moodKeywords" in restaurant else None,
+                "newMoods": restaurant["newMoods"] if "newMoods" in restaurant else None,
                 "menus": restaurant["menus"] if "menus" in restaurant else None,
                 "vector": vector
             }
@@ -82,24 +82,6 @@ def make_vector_dataset():
     print('vector dataset is set on the global variable: vector_dataset')
 
 
-
-# def convert_coords_to_address(latitude, longitude):
-#     url = f'https://dapi.kakao.com/v2/local/geo/coord2address.json'
-#     db_host = os.getenv("KAKAO_API_KEY")
-#     params = {
-#         'x': latitude,
-#         'y': longitude,
-#     }
-#
-#     headers = {'Authorization': f'KakaoAK {db_host}'}
-#     response = requests.get(url, params=params, headers=headers)
-#     try:
-#         address = response.json()['documents'][0]['address']['address_name']
-#         return address
-#     except (KeyError, IndexError):
-#         print('KAKAO API request failed!')
-#         return None
-
 def restid_to_restvec(rest_id):
     print('len of the rest restaurants_dict_from_redis is what : ', len(restaurants_dict_from_redis))
 
@@ -112,7 +94,7 @@ def restid_to_restvec(rest_id):
             print('could not find the matching id on restid_to_restvec()')
 
 # a vec, b vec
-# c = a + b / 2 => 여기가 이상한데
+# c = a + b / 2 => calculating just the average of each dimension..
 # get the closest three indices from the c..hmm
 def getting_mid_c_indices(rest_a_vec, rest_b_vec):
     print('rest_a_vec in getting_mid_c_indices(): ', rest_a_vec)
@@ -142,20 +124,14 @@ def getting_mid_c_indices(rest_a_vec, rest_b_vec):
 def res_id_to_moodKeywords(result_res_ids_set):
     mood_keywords_list = []
     for res_id in result_res_ids_set:
-        for _ in range(3):
-            for rest_from_redis in restaurants_dict_from_redis:
-                if 'moodKeywords' in rest_from_redis:
-                    if res_id == rest_from_redis['id']:
-                        mood_list = rest_from_redis['moodKeywords']
-                        if mood_keywords_list == 1:
-                            mood_keywords_list.append(mood_list[0])
-                        if mood_keywords_list == 2:
-                            mood_keywords_list.append(mood_list[0])
-                            mood_keywords_list.append(mood_list[1])
-                        if mood_keywords_list == 3:
-                            mood_keywords_list.append(mood_list[0])
-                            mood_keywords_list.append(mood_list[1])
-                            mood_keywords_list.append(mood_list[2])
+        count = 0
+        for rest_from_redis in restaurants_dict_from_redis:
+            if res_id == rest_from_redis.get('id'):
+                mood_list = rest_from_redis.get('newMoods', [])
+                mood_keywords_list.extend(mood_list[:3])
+                count += len(mood_list)
+                if count >= 3:
+                    break
 
     mood_keywords_list = list(set(mood_keywords_list))
     print('mood_keywords_list: ', mood_keywords_list)
@@ -173,23 +149,23 @@ def parse_string_with_spaces(input_string):
     return numbers
 
 def restaurants_for_many(restaurant_id_list, recommand_for_many):
-    print('restaurants_for_many function has been called! asdfasdbe')
-    print('vector_dataset len', len(vector_dataset))
+    #print('restaurants_for_many function has been called! asdfasdbe')
+    #print('vector_dataset len', len(vector_dataset))
     global restaurants_dict_from_redis
     global restaurants_dict_from_redis_original
 
     restaurants_dict_from_redis = copy.copy(restaurants_dict_from_redis_original)
-    print('copytest11(original)', len(restaurants_dict_from_redis_original))
-    print('copytest11', len(restaurants_dict_from_redis)) # 129
+    #print('copytest11(original)', len(restaurants_dict_from_redis_original))
+    #print('copytest11', len(restaurants_dict_from_redis)) # 129
 
     user_coordinates = recommand_for_many.user_coords
-    print('restaurant_id_list[0] : ', restaurant_id_list[0])
-    print('restaurant_id_list[1] : ', restaurant_id_list[1])
+    #print('restaurant_id_list[0] : ', restaurant_id_list[0])
+    #print('restaurant_id_list[1] : ', restaurant_id_list[1])
     two_vectors = []
     two_vectors.append(restid_to_restvec(restaurant_id_list[0])) # 얘가 rest['id']에 없어서 자꾸 None 찍힘
     two_vectors.append(restid_to_restvec(restaurant_id_list[1]))
-    print('two::::',two_vectors[0][0]) # 여기 같음.......하.......
-    print('two::::', two_vectors[1][0])
+    #print('two::::',two_vectors[0][0]) # 여기 같음.......하.......
+    #print('two::::', two_vectors[1][0])
 
     k = 5
     knn_model = NearestNeighbors(n_neighbors=k)
@@ -243,35 +219,35 @@ def restaurants_for_many(restaurant_id_list, recommand_for_many):
         if len(mood_keywords_list) > 1:
             # 무드키워드 [첫번째] 키워드랑 일치하는 레스토랑 리스트에 추가
             mk_list_a = df.loc[
-                df['moodKeywords'].apply(lambda x: ast.literal_eval(x) == mood_keywords_list[0]), '_id'].tolist()
+                df['newMoods'].apply(lambda x: ast.literal_eval(x) == mood_keywords_list[0]), '_id'].tolist()
             rest_ids_from_mood_keywords_list += mk_list_a
-            # print('a rest_ids_from_mood_keywords_list: ', rest_ids_from_mood_keywords_list)
-            # print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list))
+            print('a rest_ids_from_mood_keywords_list: ', rest_ids_from_mood_keywords_list)
+            print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list))
 
             # 무드키워드 [첫번째,두번째] 키워드랑 순서까지 일치하는 레스토랑 리스트에 추가
-            # print('mood_keywords_list[:2]: ', mood_keywords_list[:2])
-            mk_list_ab = df.loc[df['moodKeywords'].apply(
+            print('mood_keywords_list[:2]: ', mood_keywords_list[:2])
+            mk_list_ab = df.loc[df['newMoods'].apply(
                 lambda x: all(keyword in ast.literal_eval(x) for keyword in mood_keywords_list[:2])), '_id'].tolist()
             rest_ids_from_mood_keywords_list += mk_list_ab
-            # print('ab rest_ids_from_mood_keywords_list: ', rest_ids_from_mood_keywords_list)
-            # print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list))
+            print('ab rest_ids_from_mood_keywords_list: ', rest_ids_from_mood_keywords_list)
+            print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list))
 
             # 무드키워드 [두번째,첫번째] 키워드랑 순서까지 일치하는 레스토랑 리스트에 추가
             ba = [mood_keywords_list[1]]
             ba.append(mood_keywords_list[0])
-            # print('ba: ', ba)
-            mk_list_ba = df.loc[df['moodKeywords'].apply(
+            print('ba: ', ba)
+            mk_list_ba = df.loc[df['newMoods'].apply(
                 lambda x: all(keyword in ast.literal_eval(x) for keyword in mood_keywords_list[:2])), '_id'].tolist()
             rest_ids_from_mood_keywords_list += mk_list_ba
-            # print('ba rest_ids_from_mood_keywords_list: ', rest_ids_from_mood_keywords_list)
-            # print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list))
+            print('ba rest_ids_from_mood_keywords_list: ', rest_ids_from_mood_keywords_list)
+            print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list))
 
             # 무드키워드 [첫번째 or 두번째] 키워드랑 일치하는 레스토랑 리스트에 추가
             blist = mood_keywords_list[1]
-            mk_list_b = df.loc[df['moodKeywords'].apply(lambda x: blist in ast.literal_eval(x)[0]), '_id'].tolist()
+            mk_list_b = df.loc[df['newMoods'].apply(lambda x: blist in ast.literal_eval(x)[0]), '_id'].tolist()
             rest_ids_from_mood_keywords_list += mk_list_b
-            # print('b rest_ids_from_mood_keywords_list: ', rest_ids_from_mood_keywords_list)
-            # print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list)) # 500개정도..
+            print('b rest_ids_from_mood_keywords_list: ', rest_ids_from_mood_keywords_list)
+            print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list)) # 500개정도..
 
 
         print('rest_ids_from_mood_keywords_list len: ', len(rest_ids_from_mood_keywords_list))

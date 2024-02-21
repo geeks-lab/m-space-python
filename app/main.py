@@ -16,32 +16,6 @@ client = MongoClient(
 db = client["sniper"]
 collection = db["user_csv"]
 
-# # TODO: 이 몽고에 저장하는 함수 지워도 되는건지 체크하고 지우기.
-# def insert_restaurants(restaurants):
-#     try:
-#         bulk_operations = []  # 업데이트 또는 삽입을 위한 작업 목록
-#
-#         for restaurant in restaurants:
-#             # 기존 `_id`가 있는지 확인
-#             existing_restaurant = collection.find_one({"_id": restaurant["_id"]})
-#
-#             if existing_restaurant:
-#                 # 이미 존재하는 경우 업데이트를 위한 작업 추가
-#                 bulk_operations.append(
-#                     UpdateOne({"_id": restaurant["_id"]}, {"$set": restaurant})
-#                 )
-#             else:
-#                 # 존재하지 않는 경우 삽입을 위해 바로 MongoDB에 추가
-#                 collection.insert_one(restaurant)
-#
-#         # bulk_write를 사용하여 업데이트 및 삽입 작업을 실행
-#         if bulk_operations:
-#             collection.bulk_write(bulk_operations)
-#
-#     except Exception as e:
-#         raise Exception(f"Error inserting or updating data into MongoDB: {e}")
-
-
 # 사용자 장소 반경 1km내 식당 리스트
 class Restaurants_within_onek(BaseModel):
     userId: str
@@ -94,7 +68,7 @@ async def request_onek_rest_list_to_redis(roomId):
 class Recommand_for_one(BaseModel):
     userId: str
     roomId: str
-    moodKeywords: list
+    newMoods: list
     categories: list
 
 
@@ -134,12 +108,6 @@ async def recommand_for_many(recommand_for_many: Recommand_for_many):
     center_res = []
     processed_result = []
     user_id_list = recommand_for_many.restaurant_id_list
-    '''
-    processed_result = ['센터',
-                        '1_given_res_a', '2_given_res_b', '3_given_res_c', '4_given_res_d',
-                         '5_res_btw_a_and_center', '6_res_btw_b_and_center', 
-                         '7_res_btw_c_and_center', '8_res_btw_d_and_center']
-    '''
     redis_result = await request_onek_rest_list_to_redis(recommand_for_many.roomId)
     await get_rest_within_onek_from_redis(redis_result)
 
@@ -179,16 +147,16 @@ async def recommand_for_many(recommand_for_many: Recommand_for_many):
 
     each_with_center = []
     user_a_results = restaurants_for_many(user_a, recommand_for_many)
-    each_with_center.append(user_a_results[3])
+    each_with_center.append(user_a_results[5])
     print('each_with_center after user a: ', each_with_center)
     user_b_results = restaurants_for_many(user_b, recommand_for_many)
-    each_with_center.append(user_b_results[3])
+    each_with_center.append(user_b_results[5])
     print('each_with_center after user b: ', each_with_center)
     user_c_results = restaurants_for_many(user_c, recommand_for_many)
-    each_with_center.append(user_c_results[3])
+    each_with_center.append(user_c_results[5])
     print('each_with_center after user c: ', each_with_center)
     user_d_results = restaurants_for_many(user_d, recommand_for_many)
-    each_with_center.append(user_d_results[3])
+    each_with_center.append(user_d_results[5])
     print('each_with_center after user d: ', each_with_center)
 
     for i in range(4):
