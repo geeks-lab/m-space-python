@@ -64,8 +64,8 @@ def vectorizing_user_moodKeywords(given_moods):
         compressed_vector = sum(mood_vector) / len(mood_vector) if mood_vector else None
         # If compressed_vector is not None, convert it to a string with commas between values
         if compressed_vector is not None:
-            #vector_str = '[' + ', '.join(map(str, compressed_vector)) + ']'
-            vector_str = ', '.join(map(str, compressed_vector))
+            vector_str = '[' + ', '.join(map(str, compressed_vector)) + ']'
+            #vector_str = ', '.join(map(str, compressed_vector))
         else:
             vector_str = None
 
@@ -77,8 +77,8 @@ def vectorizing_user_moodKeywords(given_moods):
 
 # 모든 벡터 간의 유클리드 거리를 계산하는 함수
 def calculate_euclidean_distance(user_vector, rest_vector):
-    print('calculate_euclidean_distance func is called!')
-    print("rest['vector'] test(rest_vector): ", rest_vector)
+    #print('calculate_euclidean_distance func is called!')
+    # print("rest['vector'] test(rest_vector): ", rest_vector)
     if len(user_vector) != len(rest_vector):
         raise ValueError("Vector dimensions do not match.")
     distance = np.linalg.norm(np.array(user_vector) - np.array(rest_vector))
@@ -90,7 +90,7 @@ def restaurants_for_one(recommand_for_one, redis_result):
     user_id = recommand_for_one.userId
     given_category_list = recommand_for_one.categories
     given_moods = recommand_for_one.newMoods
-    print('given_moods : ', given_moods)
+    #print('given_moods : ', given_moods)
 
     cate_filtered_nearby_rests = []
     nearby_restaurants = []
@@ -118,8 +118,8 @@ def restaurants_for_one(recommand_for_one, redis_result):
         nearby_restaurants.append(restaurant_data)
 
     # test print
-    for res in nearby_restaurants:
-        print(f"res_id: {res['id']} / newMoods: {res['newMoods']}")
+    # for res in nearby_restaurants:
+    #     print(f"res_id: {res['id']} / newMoods: {res['newMoods']}")
     # 사용자가 입력한 카테고리와 일치하는 식당 필터링
     for restaurant in nearby_restaurants:
         if 'food_category' in restaurant and 'foodCategories' in restaurant:
