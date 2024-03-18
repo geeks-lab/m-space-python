@@ -7,7 +7,7 @@
 
 기능을 한 줄로 요약하면 <U>개인의 취향에 맞는 식당을 추천</U>해주고, <U>식당과 식당의 중간 지점에 있는 식당들을 추천</U>해준다. 자세한건 아래 노션페이지에서 확인할 수 있다.
 
-[팀 소개 노션 페이지](https://www.notion.so/aca822e2ff304d919aa8a945efa6f80c?pvs=4)
+[팀 소개 노션 페이지 바로가기](https://www.notion.so/aca822e2ff304d919aa8a945efa6f80c?pvs=4)
 
 ![](https://velog.velcdn.com/images/gigis-note/post/cfd9a1f1-5d6e-45d4-bd6c-331d969fb56c/image.png)
 
