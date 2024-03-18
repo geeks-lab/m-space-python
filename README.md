@@ -1,6 +1,7 @@
 # backend-python
 
-<a href="https://velog.io/@gigis-note/%EB%82%98%EB%A7%8C%EC%9D%98%EB%AC%B4%EA%B8%B0-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%ED%9A%8C%EA%B3%A05W">프로젝트 설명 & 내가 기여한 부분 from my blog</a>
+<a href="https://www.notion.so/aca822e2ff304d919aa8a945efa6f80c">팀소개 노션페이지 바로가기</a><br>
+<a href="https://www.youtube.com/watch?v=VIPjuLDJ1Y0">시연 영상 바로가기</a>
 
 ## 팀이 어떤 것들을 했는지
 우리 팀은 **맛스페이스** 라는 맛집 추천 웹서비스를 만들었다. 친구들 혹은 동료들끼리 함께 갈 식당을 정할 때 서로 원하는 취향과 먹고 싶은 음식을 맞추기 위해 시간을 많이 사용한다. 그래서 우리는 각자 취향의 교집합 혹은 중간 지점을 구해주면 어떨까 하는 발상에서 시작되었다.
